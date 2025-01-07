@@ -273,4 +273,30 @@ describe("payment-processor", () => {
     console.log('Payment succeeded after resuming');
   })
 
+  it('should emit an event when the payment is done', async () => {
+    const events = [];
+
+    const subscriptionId = program.addEventListener('paymentDone', (event) => {
+      events.push(event);
+    })
+
+    const amount = new anchor.BN(50_000);
+    const paymentId = new anchor.BN(123);
+    await program.methods.pay(amount, paymentId).accounts({
+      payer: payerKeypair.publicKey,
+      payerTokenAccount: payerTokenAccount,
+      receiverTokenAccount: receiverTokenAccount,
+      paymentProcessor: paymentProcessorPubkey,
+    }).signers([payerKeypair]).rpc();
+
+
+    expect(events.length).to.equal(1);
+    expect(events[0].amount.toNumber()).to.equal(amount.toNumber());
+    expect(events[0].paymentId.toNumber()).to.equal(paymentId.toNumber());
+    expect(events[0].payer.toBase58()).to.equal(payerKeypair.publicKey.toBase58());
+    expect(events[0].timestamp).to.exist;
+
+    await program.removeEventListener(subscriptionId);
+  })
+
 });
