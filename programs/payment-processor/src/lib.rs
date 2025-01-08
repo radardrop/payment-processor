@@ -93,7 +93,13 @@ impl PaymentProcessor {
 #[derive(Accounts)]
 #[instruction(receiver: Pubkey)]
 pub struct Initialize<'info> {
-    #[account(init, payer = payer, space = PaymentProcessor::SIZE)]
+    #[account(
+        init,
+        payer = payer,
+        seeds = [b"payment_processor"],
+        space = PaymentProcessor::SIZE,
+        bump
+    )]
     pub payment_processor: Account<'info, PaymentProcessor>,
 
     /// The perso who creates (and owns) the PaymentProcessor account.
