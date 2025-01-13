@@ -5,6 +5,7 @@ import { PublicKey } from "@solana/web3.js";
 import { getWalletFromKeypair } from "../utils/wallet-from-keypair";
 import * as anchor from "@coral-xyz/anchor";
 import idl from "../../target/idl/payment_processor.json";
+import { PaymentProcessor } from "../../target/types/payment_processor";
 
 export const getBaseCommand = (program: Command, name: string) => {
   const homePath = process.env.HOME || process.env.USERPROFILE || "/root";
@@ -16,6 +17,7 @@ export const getBaseCommand = (program: Command, name: string) => {
         .choices(["devnet", "testnet", "mainnet-beta"])
         .default("devnet")
     )
+    .addOption(new Option("--rpc <rpc>", "The RPC URL to use"))
     .addOption(
       new Option(
         "-k, --keypair <keypair>",
@@ -27,12 +29,12 @@ export const getBaseCommand = (program: Command, name: string) => {
 export const initCommand = (params: CommandBaseParams & CommandBaseOptions) => {
   const programId = new PublicKey(params.programId);
   const wallet = getWalletFromKeypair(params.keypair);
-  const connection = new anchor.web3.Connection(
-    anchor.web3.clusterApiUrl(params.cluster),
-    "confirmed"
-  );
+  const rpc = params.rpc
+    ? params.rpc
+    : anchor.web3.clusterApiUrl(params.cluster);
+  const connection = new anchor.web3.Connection(rpc, "confirmed");
   const provider = new anchor.AnchorProvider(connection, wallet, {});
-  const program = new anchor.Program(idl as anchor.Idl, provider);
+  const program = new anchor.Program(idl as PaymentProcessor, provider);
 
   const [paymentProcessor] = PublicKey.findProgramAddressSync(
     [anchor.utils.bytes.utf8.encode("payment_processor")],

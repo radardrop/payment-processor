@@ -32,6 +32,7 @@ const invoke = async (params: CommandParams) => {
     .setReceiver(new anchor.web3.PublicKey(params.receiver))
     .accounts({
       paymentProcessor,
+      // @ts-ignore
       payer: wallet.publicKey,
     })
     .signers([wallet.payer])

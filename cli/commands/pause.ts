@@ -21,6 +21,7 @@ const invoke = async (params: CommandParams) => {
     .pause()
     .accounts({
       paymentProcessor,
+      // @ts-ignore
       payer: wallet.publicKey,
     })
     .signers([wallet.payer])

@@ -14,7 +14,7 @@ payment_processor = "6k7LvmC8cisSMeNz6xK3Lw81rMfPKrjLn5uBNNUMiJE5"
 url = "https://api.apr.dev"
 
 [provider]
-cluster = "devnet"
+cluster = "http://127.0.0.1:8899"
 wallet = "~/.config/solana/minter-testnet.json"
 
 [scripts]
