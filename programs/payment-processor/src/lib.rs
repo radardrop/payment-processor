@@ -44,17 +44,27 @@ pub mod payment_processor {
         Ok(())
     }
 
-    /// Pay: transfers `amount` of SPL tokens from `payer` to `receiver`.
-    /// Emits a `PaymentDone` event for off-chain listening.
+    /// Transfers `amount` of SPL tokens from the payer to the receiver.
+    ///
+    /// # Parameters
+    ///
+    /// - `amount`: The number of tokens to transfer, specified in the smallest denomination.
+    ///             For example, if the token has 6 decimals, 1 token is represented as 1_000_000.
+    /// - `payment_id`: A unique identifier for the payment.
     pub fn pay(ctx: Context<Pay>, amount: u64, payment_id: u64) -> Result<()> {
         let payment_processor = &ctx.accounts.payment_processor;
 
-        // Check the mint
+        // Check the mint.
         if payment_processor.mint != ctx.accounts.payer_token_account.mint {
             return err!(PaymentProcessorError::InvalidMint);
         }
 
-        // Check if paused
+        // Check the mint of the receiver's token account.
+        if payment_processor.mint != ctx.accounts.receiver_token_account.mint {
+            return err!(PaymentProcessorError::ReceiverTokenMintMismatch);
+        }
+
+        // Check if paused.
         if payment_processor.paused {
             return err!(PaymentProcessorError::PaymentProcessorPaused);
         }
@@ -85,7 +95,7 @@ pub struct PaymentProcessor {
     pub paused: bool,
 }
 
-/// Discriminator (8 bytes) + owner (32) + receiver (32) + mint (32) + paused (1) = 73 bytes
+/// Discriminator (8 bytes) + owner (32) + receiver (32) + mint (32) + paused (1) = 105 bytes
 impl PaymentProcessor {
     pub const SIZE: usize = 8 + 32 + 32 + 32 + 1;
 }
@@ -159,7 +169,11 @@ pub struct Pay<'info> {
     pub payer_token_account: Account<'info, TokenAccount>,
 
     /// The token account of the receiver (which will receive the tokens).
-    #[account(mut)]
+    #[account(
+        mut,
+        // Enforce that the token account's owner is the designated receiver.
+        constraint = receiver_token_account.owner == receiver.key()
+    )]
     pub receiver_token_account: Account<'info, TokenAccount>,
 
     /// PaymentProcessor must match the receiver field with `receiver_token_account.owner`
@@ -204,4 +218,6 @@ pub enum PaymentProcessorError {
     PaymentProcessorPaused,
     #[msg("The mint of the provided token account does not match the PaymentProcessor")]
     InvalidMint,
+    #[msg("The receiver token account mint does not match the PaymentProcessor mint")]
+    ReceiverTokenMintMismatch,
 }

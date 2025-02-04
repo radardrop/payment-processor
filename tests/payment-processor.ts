@@ -25,7 +25,7 @@ describe("payment-processor", () => {
 
   // We'll store relevant addresses here
   let paymentProcessorPubkey: PublicKey;
-  let rdaiMintPubkey: PublicKey; // "RDAI" or your SPL token
+  let rdaiMintPubkey: PublicKey;
   let payerTokenAccount: PublicKey;
   let receiverTokenAccount: PublicKey;
 

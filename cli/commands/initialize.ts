@@ -4,7 +4,6 @@ import { CommandBaseOptions, CommandBaseParams } from "../type/base.type";
 import { getBaseCommand, initCommand } from "./base-command";
 import * as anchor from "@coral-xyz/anchor";
 import {
-  createAssociatedTokenAccount,
   createAssociatedTokenAccountInstruction,
   getAssociatedTokenAddress,
 } from "@solana/spl-token";
